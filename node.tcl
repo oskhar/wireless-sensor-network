@@ -11,17 +11,17 @@ set n1 [$ns node]
 
 $ns duplex-link $n0 $n1 2Mb 4ms DropTail
 
-set tcp1 [new Agent/TCP]
+set tcp [new Agent/TCP]
 set sink [new Agent/TCPSink]
 
-$ns attach-agent $n0 $tcp1
+$ns attach-agent $n0 $tcp
 $ns attach-agent $n1 $sink
 
-$ns connect $tcp1 $sink
+$ns connect $tcp $sink
 
 set ftp [new Application/FTP]
 
-$ftp attach-agent $tcp1
+$ftp attach-agent $tcp
 
 proc finish { } {
     global ns tr ftr
