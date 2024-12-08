@@ -49,7 +49,7 @@ $ns duplex-link $n9 $n10 2Mb 10ms DropTail
 
 # Mengatur orientasi link untuk visualisasi NAM
 $ns duplex-link-op $n1 $n2 orient right-up
-$ns duplex-link-op $n2 $n3 orient right
+$ns duplex-link-op $n2 $n3 orient right-up
 $ns duplex-link-op $n3 $n8 orient right-down
 $ns duplex-link-op $n1 $n6 orient right
 $ns duplex-link-op $n6 $n7 orient right

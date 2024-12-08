@@ -1,0 +1,167 @@
+# Membuat instance simulator baru
+set ns [new Simulator]
+
+# Membuka file trace dan file nam
+set tr [open "out.tr" w]
+$ns trace-all $tr
+
+set namfile [open "out.nam" w]
+$ns namtrace-all $namfile
+
+# Inisiasi warna ns
+$ns color 1 Blue
+$ns color 2 Red
+$ns color 3 Green
+$ns color 4 Yellow
+
+# Define a 'finish' procedure
+proc finish {} {
+    global ns tr namfile
+    $ns flush-trace
+    close $tr
+    close $namfile
+    exec nam out.nam &
+    exit 0
+}
+
+# Menyusun node dalam bentuk stickman
+# Kepala
+set n0 [$ns node]      ;# Kepala
+$n0 set X_ 250.0
+$n0 set Y_ 350.0
+
+# Badan
+set n1 [$ns node]      ;# Leher / bagian atas badan
+$n1 set X_ 250.0
+$n1 set Y_ 300.0
+
+set n2 [$ns node]      ;# Bagian tengah badan
+$n2 set X_ 250.0
+$n2 set Y_ 250.0
+
+set n3 [$ns node]      ;# Bagian bawah badan
+$n3 set X_ 250.0
+$n3 set Y_ 200.0
+
+# Tangan
+set n4 [$ns node]      ;# Tangan kiri
+$n4 set X_ 200.0
+$n4 set Y_ 275.0
+
+set n5 [$ns node]      ;# Tangan kanan
+$n5 set X_ 300.0
+$n5 set Y_ 275.0
+
+# Kaki
+set n6 [$ns node]      ;# Kaki kiri atas
+$n6 set X_ 225.0
+$n6 set Y_ 150.0
+
+set n7 [$ns node]      ;# Kaki kiri bawah
+$n7 set X_ 200.0
+$n7 set Y_ 100.0
+
+set n8 [$ns node]      ;# Kaki kanan atas
+$n8 set X_ 275.0
+$n8 set Y_ 150.0
+
+set n9 [$ns node]      ;# Kaki kanan bawah
+$n9 set X_ 300.0
+$n9 set Y_ 100.0
+
+# Menghubungkan node untuk membentuk pola stickman
+$ns duplex-link $n0 $n1 2Mb 10ms DropTail
+$ns duplex-link $n1 $n2 2Mb 10ms DropTail
+$ns duplex-link $n2 $n3 2Mb 10ms DropTail
+
+$ns duplex-link $n1 $n4 2Mb 10ms DropTail
+$ns duplex-link $n1 $n5 2Mb 10ms DropTail
+
+$ns duplex-link $n3 $n6 2Mb 10ms DropTail
+$ns duplex-link $n6 $n7 2Mb 10ms DropTail
+$ns duplex-link $n3 $n8 2Mb 10ms DropTail
+$ns duplex-link $n8 $n9 2Mb 10ms DropTail
+
+# Orientasi link untuk visualisasi yang lebih baik di NAM
+$ns duplex-link-op $n0 $n1 orient down
+$ns duplex-link-op $n1 $n2 orient down
+$ns duplex-link-op $n2 $n3 orient down
+$ns duplex-link-op $n1 $n4 orient left
+$ns duplex-link-op $n1 $n5 orient right
+$ns duplex-link-op $n3 $n6 orient left-down
+$ns duplex-link-op $n6 $n7 orient left-down
+$ns duplex-link-op $n3 $n8 orient right-down
+$ns duplex-link-op $n8 $n9 orient right-down
+
+# Menambahkan agen UDP dan Null di beberapa node untuk mengirim dan menerima data
+set udp0 [new Agent/UDP]
+$ns attach-agent $n0 $udp0
+set null0 [new Agent/Null]
+$ns attach-agent $n9 $null0
+$ns connect $udp0 $null0
+
+set udp1 [new Agent/UDP]
+$ns attach-agent $n4 $udp1
+set null1 [new Agent/Null]
+$ns attach-agent $n5 $null1
+$ns connect $udp1 $null1
+
+set udp2 [new Agent/UDP]
+$ns attach-agent $n6 $udp2
+set null2 [new Agent/Null]
+$ns attach-agent $n8 $null2
+$ns connect $udp2 $null2
+
+set udp3 [new Agent/UDP]
+$ns attach-agent $n1 $udp3
+set null3 [new Agent/Null]
+$ns attach-agent $n3 $null3
+$ns connect $udp3 $null3
+
+set udp4 [new Agent/UDP]
+$ns attach-agent $n7 $udp4
+set null4 [new Agent/Null]
+$ns attach-agent $n9 $null4
+$ns connect $udp4 $null4
+
+# Menambahkan aplikasi CBR pada setiap agen UDP untuk menyebarkan lalu lintas data
+set cbr0 [new Application/Traffic/CBR]
+$cbr0 attach-agent $udp0
+$cbr0 set packet_size_ 500
+$cbr0 set rate_ 1mb
+
+set cbr1 [new Application/Traffic/CBR]
+$cbr1 attach-agent $udp1
+$cbr1 set packet_size_ 500
+$cbr1 set rate_ 1mb
+
+set cbr2 [new Application/Traffic/CBR]
+$cbr2 attach-agent $udp2
+$cbr2 set packet_size_ 500
+$cbr2 set rate_ 1mb
+
+set cbr3 [new Application/Traffic/CBR]
+$cbr3 attach-agent $udp3
+$cbr3 set packet_size_ 500
+$cbr3 set rate_ 1mb
+
+set cbr4 [new Application/Traffic/CBR]
+$cbr4 attach-agent $udp4
+$cbr4 set packet_size_ 500
+$cbr4 set rate_ 1mb
+
+# Menjadwalkan mulai dan berhenti untuk setiap aplikasi CBR
+$ns at 0.1 "$cbr0 start"
+$ns at 0.2 "$cbr1 start"
+$ns at 0.3 "$cbr2 start"
+$ns at 0.4 "$cbr3 start"
+$ns at 0.5 "$cbr4 start"
+
+# Menambahkan label pada node 0 menggunakan anotasi teks di NAM
+$ns at 0.0 "$n0 label \"ambatukam\""
+
+# Menyelesaikan simulasi pada waktu tertentu
+$ns at 5.0 "finish"
+
+# Menjalankan simulasi
+$ns run
